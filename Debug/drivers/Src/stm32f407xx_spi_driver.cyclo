@@ -1,0 +1,5 @@
+../drivers/Src/stm32f407xx_spi_driver.c:9:6:SPI_PeriClockControl	9
+../drivers/Src/stm32f407xx_spi_driver.c:43:6:SPI_Init	4
+../drivers/Src/stm32f407xx_spi_driver.c:94:6:SPI_SendData	4
+../drivers/Src/stm32f407xx_spi_driver.c:121:6:SPI_PeripheralControl	2
+../drivers/Src/stm32f407xx_spi_driver.c:132:6:SPI_SSIConfig	2

@@ -24,87 +24,93 @@
 #include <stdint.h>
 #include <stdio.h>
 
+
 #include "stm32f407xx.h"
 #include "stm32f407xx_gpio_driver.h"
+#include "stm32f407xx_spi_driver.h"
 
-// #if !defined(__SOFT_FP__) && defined(__ARM_FP)
-//   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
-// #endif
+//#if !defined(__SOFT_FP__) && defined(__ARM_FP)
+//  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
+//#endif
 void delay(void)
 {
-  for (uint32_t i = 0; i < 500000; ++i)
-    ;
+	for(uint32_t i =0;i<500000;++i);
 }
 
-// void Gpio_Config(GPIO_Handle_t Gpio,GPIO_RegDef_t * pGPIOx )
+//void Gpio_Config(GPIO_Handle_t Gpio,GPIO_RegDef_t * pGPIOx )
+
+
+//This function is used to initialize the gpio pins to behave as SPI2 pins
+void SPI2_GPIOInits()
+{
+
+    /*
+     * SPI 2 Pin Config
+     * PB14  --> MISO
+     * PB15 --> MOSi
+     * PB13  --> SCLK
+     * PB12  --> NSS
+     * ALT fun mode : 5
+     */
+	GPIO_Handle_t SPI2_Pins;
+
+	SPI2_Pins.pGPIOx = GPIOB;
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_ALTFN;
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinAltFunMode = 5;
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinOpType = GPIO_OP_TYPE_PP;
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+
+	//SCLK'
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_13;
+	GPIO_Init(&SPI2_Pins);
+
+	//MOSI
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_15;
+	GPIO_Init(&SPI2_Pins);
+
+	//MISO
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_14;
+	GPIO_Init(&SPI2_Pins);
+
+	//NSS
+	SPI2_Pins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_12;
+	GPIO_Init(&SPI2_Pins);
+}
+
+void SPI2_Inits()
+{
+	SPI_Handle_t SPI2handle;
+
+	SPI2handle.pSPIx = SPI2;
+	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
+	SPI2handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
+	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV2;
+	SPI2handle.SPIConfig.SPI_DFF = SPI_DFF_8BITS;
+	SPI2handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
+	SPI2handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
+	SPI2handle.SPIConfig.SPI_SSM = SPI_SSM_EN;
+
+	SPI_Init(&SPI2handle);
+
+}
 
 int main(void)
-{ // salman
-  GPIO_Handle_t GpioLed_1;
-  GpioLed_1.pGPIOx = GPIOD;
-  GpioLed_1.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_12;
-  GpioLed_1.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
-  GpioLed_1.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-  GpioLed_1.GPIO_PinConfig.GPIO_PinOpType = GPIO_OP_TYPE_PP;
-  GpioLed_1.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+{
+   char userData[] = "HelloWorld!";
+   SPI2_GPIOInits();
+   SPI2_Inits();
 
-  GPIO_Handle_t GpioLed_2;
-  GpioLed_2.pGPIOx = GPIOD;
-  GpioLed_2.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_13;
-  GpioLed_2.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
-  GpioLed_2.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-  GpioLed_2.GPIO_PinConfig.GPIO_PinOpType = GPIO_OP_TYPE_PP;
-  GpioLed_2.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+   /* This makes NSS signal internally  high and avoid MODF error */
+   SPI_SSIConfig(SPI2, ENABLE);
 
-  GPIO_Handle_t GpioLed_3;
-  GpioLed_3.pGPIOx = GPIOD;
-  GpioLed_3.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_14;
-  GpioLed_3.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
-  GpioLed_3.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-  GpioLed_3.GPIO_PinConfig.GPIO_PinOpType = GPIO_OP_TYPE_PP;
-  GpioLed_3.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+   //Enable SPI2 Peripheral
+   SPI_PeripheralControl(SPI2, ENABLE);
+   SPI_SendData(SPI2,(uint8_t*)userData, sizeof(userData));
+   SPI_PeripheralControl(SPI2, DISABLE);
+   while(1)
+    {
 
-  GPIO_Handle_t GpioLed_4;
-  GpioLed_4.pGPIOx = GPIOD;
-  GpioLed_4.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_15;
-  GpioLed_4.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
-  GpioLed_4.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-  GpioLed_4.GPIO_PinConfig.GPIO_PinOpType = GPIO_OP_TYPE_PP;
-  GpioLed_4.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
-
-  GPIO_Handle_t GpioBtn;
-  GpioBtn.pGPIOx = GPIOA;
-  GpioBtn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_0;
-  GpioBtn.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_IN;
-  GpioBtn.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-  GpioBtn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
-
-  GPIO_PeriClockControl(GPIOD, ENABLE);
-  GPIO_PeriClockControl(GPIOA, ENABLE);
-
-  GPIO_Init(&GpioLed_1);
-  GPIO_Init(&GpioLed_2);
-  GPIO_Init(&GpioLed_3);
-  GPIO_Init(&GpioLed_4);
-  GPIO_Init(&GpioBtn);
-  while (1)
-  {
-
-    // if(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0))
-    // {
-    //   	GPIO_ToggleOutputPin(GPIOD,GPIO_PIN_NO_12);
-    //   	GPIO_ToggleOutputPin(GPIOD,GPIO_PIN_NO_13);
-    //   	GPIO_ToggleOutputPin(GPIOD,GPIO_PIN_NO_14);
-    //   	GPIO_ToggleOutputPin(GPIOD,GPIO_PIN_NO_15);
-    // }
-    GPIO_ToggleOutputPin(GPIOD, GPIO_PIN_NO_12);
-    delay();
-    GPIO_ToggleOutputPin(GPIOD, GPIO_PIN_NO_13);
-    delay();
-    GPIO_ToggleOutputPin(GPIOD, GPIO_PIN_NO_14);
-    delay();
-    GPIO_ToggleOutputPin(GPIOD, GPIO_PIN_NO_15);
-    delay();
-  }
-  return 0;
+    }
+    return 0;
 }

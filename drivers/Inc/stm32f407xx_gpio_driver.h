@@ -41,9 +41,9 @@ typedef struct
 #define GPIO_MODE_OUT      1
 #define GPIO_MODE_ALTFN    2
 #define GPIO_MODE_ANALOG   3
-#define GPIO_MODE_IT_FT    4       //GPIO i/p mode with falling edge
-#define GPIO_MODE_IT_RT    5       //GPIO i/p mode with rising edge
-#define GPIO_MODE_IT_RFT   6       ////GPIO i/p mode with rising edge falling edge trigger
+#define GPIO_MODE_IT_FT    4       //GPIO i/p mode with falling edge  /* Interrupt mode*/
+#define GPIO_MODE_IT_RT    5       //GPIO i/p mode with rising edge   /* Interrupt mode*/
+#define GPIO_MODE_IT_RFT   6       ////GPIO i/p mode with rising edge falling edge trigger  /* Interrupt mode*/
 
 
 /*
@@ -103,8 +103,8 @@ uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t *pGPIOx);
 void GPIO_WriteToOutputPin(GPIO_RegDef_t *pGPIOx,uint8_t PinNumber,uint8_t Value);
 void GPIO_WriteToOutputPort(GPIO_RegDef_t *pGPIOx,uint16_t Value);
 void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx,uint8_t PinNumber);
-void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t EnorDi);
+void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi);
 void GPIO_IRQHandling(uint8_t PinNumber);
-
+void GPIO_IRQPriorityConfig(uint8_t IRQNumber,uint32_t IRQPriority);
 
 #endif /* INC_STM32F407XX_GPIO_DRIVER_H_ */
