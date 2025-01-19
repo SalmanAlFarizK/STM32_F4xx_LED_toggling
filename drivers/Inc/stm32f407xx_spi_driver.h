@@ -60,6 +60,23 @@
 #define SPI_SSM_EN                      1
 #define SPI_SSM_DI                      0
 
+
+/*
+ * Spi Possible states
+ */
+#define SPI_READY         0
+#define SPI_BSY_IN_RX     1
+#define SPI_BSY_IN_TX     2
+
+
+/*
+ * Spi Possible application events
+ */
+#define SPI_EVENT_TX_CMPLT     1
+#define SPI_EVENT_RX_CMPLT     2
+#define SPI_EVENT_OVR_ERR      3
+#define SPI_EVENT_CRC_ERR      4
+
 /*
  * Configuration structure for SPIx peripheral
  */
@@ -82,6 +99,12 @@ typedef struct
 {
 	SPI_RegDef_t *pSPIx; /*This holds the base address of SPIx Peripheral*/
 	SPI_Config_t SPIConfig;
+	uint8_t * pTxBuff;  /* !< To store app. Tx buffer address> */
+	uint8_t * pRxBuff;  /* !< To store app. Rx buffer address> */
+	uint32_t txLen;		/* !< To store Tx Length > */
+	uint32_t rxLen;		/* !< To store Rx Length > */
+	uint8_t txState;	/* !< To store Tx State > */
+	uint8_t rxState;	/* !< To store Rx State > */
 }SPI_Handle_t;
 
 /*******************************************************************************
@@ -100,6 +123,10 @@ void SPI_PeriClockControl(SPI_RegDef_t *pSPIx, uint8_t EnorDi);
 void SPI_SendData(SPI_RegDef_t *pSPIx,uint8_t *pTxBuff,uint32_t Len);
 void SPI_ReceiveData(SPI_RegDef_t *pSPIx,uint8_t *pRxBuff,uint32_t Len);
 
+// APIs Works in interrupt mode
+uint8_t SPI_SendDataIT(SPI_Handle_t *pHandle,uint8_t *pTxBuff,uint32_t Len);
+uint8_t SPI_ReceiveDataIT(SPI_Handle_t *pHandle,uint8_t *pRxBuff,uint32_t Len);
+
 /*
  * Other peripheral control APIs
  */
@@ -111,5 +138,12 @@ void SPI_SSIConfig(SPI_RegDef_t *pSPIx,uint8_t EnOrDi);
 void SPI_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi);
 void SPI_IRQHandling(SPI_Handle_t *pHandle);
 void SPI_IRQPriorityConfig(uint8_t IRQNumber,uint32_t IRQPriority);
+void SPI_CleaOVRFlag(SPI_RegDef_t *pSPIx);
+void SPI_CloseTransmission(SPI_Handle_t *pHandle);
+void SPI_CloseReception(SPI_Handle_t *pHandle);
 
+/*
+ * Application callBack
+ */
+void SPI_ApplicationEventCallback(SPI_Handle_t *pSPIHandle,uint8_t AppEvent);
 #endif /* INC_STM32F407XX_SPI_DRIVER_H_ */
