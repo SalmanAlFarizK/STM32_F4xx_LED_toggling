@@ -28,6 +28,7 @@
 #include "stm32f407xx.h"
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
+#include "stm32f407xx_i2c_driver.h"
 
 //#if !defined(__SOFT_FP__) && defined(__ARM_FP)
 //  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
@@ -38,6 +39,10 @@ void delay(void)
 }
 
 //void Gpio_Config(GPIO_Handle_t Gpio,GPIO_RegDef_t * pGPIOx )
+
+#define MY_ADDRESS   0X61
+#define SLAVE_ADDR   0x68  // Slave address we get from slave device
+I2C_Handle_t I2C1Handle;
 
 
 //This function is used to initialize the gpio pins to behave as SPI2 pins
@@ -92,22 +97,68 @@ void SPI2_Inits()
 	SPI2handle.SPIConfig.SPI_SSM = SPI_SSM_EN;
 
 	SPI_Init(&SPI2handle);
+}
 
+void I2C1_GPIOInits()
+{
+	/*
+	 * I2C Pin config
+	 * PB6 SCL
+	 * PB7 SDA
+	 */
+	GPIO_Handle_t I2C1_Pins;
+
+	I2C1_Pins.pGPIOx = GPIOB;
+	I2C1_Pins.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_ALTFN;
+	I2C1_Pins.GPIO_PinConfig.GPIO_PinAltFunMode = 4;
+	I2C1_Pins.GPIO_PinConfig.GPIO_PinOpType = GPIO_OP_TYPE_OD;
+	I2C1_Pins.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PIN_PU;
+	I2C1_Pins.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+
+	//SCL
+	I2C1_Pins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_6;
+	GPIO_Init(&I2C1_Pins);
+
+	//SDA
+	I2C1_Pins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_7;
+	GPIO_Init(&I2C1_Pins);
+}
+
+void I2C1Inits()
+{
+	I2C1Handle.pI2Cx = I2C1;
+	I2C1Handle.I2C_Config.I2C_ACKControl = I2C_ACK_ENABLE;
+	/*
+	 * Since we are master, it is not necessary to configure the device address
+	 * Device address is only used as only if our board is acting as as slave
+	 * Here I am giving 0x61 as my slave address simply
+	 */
+	I2C1Handle.I2C_Config.I2C_DeviceAddress = MY_ADDRESS;
+	/*
+	 * Actually we are using I2C standard mode communication
+	 * FM duty cycle configuration is requires only if i2c scl speed is fast mode.
+	 */
+	I2C1Handle.I2C_Config.I2C_FMDutyCycle = I2C_FM_DUTY_2;
+	I2C1Handle.I2C_Config.I2C_SCLSpeed = I2C_SPEED_SM;
+
+	I2C_Init(&I2C1Handle);
 }
 
 int main(void)
 {
-   char userData[] = "HelloWorld!";
-   SPI2_GPIOInits();
-   SPI2_Inits();
+	uint8_t i2cData[] = "Hello I2C peripheral!!\n";
 
-   /* This makes NSS signal internally  high and avoid MODF error */
-   SPI_SSIConfig(SPI2, ENABLE);
+	//I2C pin inits
+	I2C1_GPIOInits();
 
-   //Enable SPI2 Peripheral
-   SPI_PeripheralControl(SPI2, ENABLE);
-   SPI_SendData(SPI2,(uint8_t*)userData, sizeof(userData));
-   SPI_PeripheralControl(SPI2, DISABLE);
+	//I2C peripheral configuration
+	I2C1Inits();
+
+	//Enable the I2C peripheral
+	I2C_PeripheralControl(I2C1, ENABLE);
+
+	I2C_MasterSendData(&I2C1Handle, i2cData, strlen((char *)i2cData), SLAVE_ADDR);
+
    while(1)
     {
 

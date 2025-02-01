@@ -311,7 +311,7 @@ void SPI_IRQHandling(SPI_Handle_t *pHandle)
 	}
 }
 
-void spi_txe_interrupt_handle(SPI_Handle_t *pSPIHandle)
+static void spi_txe_interrupt_handle(SPI_Handle_t *pSPIHandle)
 {
 
 	//2. Check the DFF bit in CR1

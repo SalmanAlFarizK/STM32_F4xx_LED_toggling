@@ -174,6 +174,61 @@
 
 
 
+/********************************************************************
+ * Bit position definitions of I2C peripheral
+ ********************************************************************/
+
+/*
+ * Bit position definition for I2C_CR1
+ */
+#define I2C_CR1_PE           0
+#define I2C_CR1_SMBUS        1
+#define I2C_CR1_SMBTYPE      3
+#define I2C_CR1_ENARP        4
+#define I2C_CR1_ENPEC        5
+#define I2C_CR1_ENGC         6
+#define I2C_CR1_NOSTRETCH    7
+#define I2C_CR1_START        8
+#define I2C_CR1_STOP         9
+#define I2C_CR1_ACK          10
+#define I2C_CR1_POS          11
+#define I2C_CR1_PEC          12
+#define I2C_CR1_ALERT        13
+#define I2C_CR1_SWRST        15
+
+
+/*
+ * Bit position definition for I2C_SR1
+ */
+#define I2C_SR1_SB           0
+#define I2C_SR1_ADDR         1
+#define I2C_SR1_BTF          2
+#define I2C_SR1_ADD10        3
+#define I2C_SR1_STOPF        4
+#define I2C_SR1_RxNE         6
+#define I2C_SR1_TxE          7
+#define I2C_SR1_BERR         8
+#define I2C_SR1_ARLO         9
+#define I2C_SR1_AF           10
+#define I2C_SR1_OVR          11
+#define I2C_SR1_PECERR       12
+#define I2C_SR1_TIMEOUT      14
+#define I2C_SR1_SMBALERT     15
+
+
+/*
+ * Bit position definition for I2C_SR2
+ */
+#define I2C_SR2_MSL           0
+#define I2C_SR2_BUSY          1
+#define I2C_SR2_TRA           2
+#define I2C_SR2_GENCALL       4
+#define I2C_SR2_SMBDEFAULT    5
+#define I2C_SR2_SMBHOST       6
+#define I2C_SR2_DUALF         7
+
+
+
 
 /*
  * Peripheral register definition structure for GPIO
@@ -211,6 +266,26 @@ typedef struct
 	__vo uint32_t SPI_I2SCFGR;
 	__vo uint32_t SPI_I2SPR;
 }SPI_RegDef_t;
+
+
+
+/*
+ * Peripheral register definition structure for I2C
+ */
+
+typedef struct
+{
+	__vo uint32_t I2C_CR1;
+	__vo uint32_t I2C_CR2;
+	__vo uint32_t I2C_OAR1;
+	__vo uint32_t I2C_OAR2;
+	__vo uint32_t I2C_DR;
+	__vo uint32_t I2C_SR1;
+	__vo uint32_t I2C_SR2;
+	__vo uint32_t I2C_CCR;
+	__vo uint32_t I2C_TRISE;
+	__vo uint32_t I2C_FLTR;
+}I2C_RegDef_t;
 
 /*
  * Peripheral register definition structure for RCC
@@ -301,6 +376,10 @@ typedef struct{
 #define SPI1              ((SPI_RegDef_t*)SPI1_BASEADDR)
 #define SPI2              ((SPI_RegDef_t*)SPI2_BASEADDR)
 #define SPI3              ((SPI_RegDef_t*)SPI3_BASEADDR)
+
+#define I2C1              ((I2C_RegDef_t*)I2C1_BASEADDR)
+#define I2C2              ((I2C_RegDef_t*)I2C2_BASEADDR)
+#define I2C3              ((I2C_RegDef_t*)I2C3_BASEADDR)
 
 /*
  * Clock enable macros for GPIOx peripherals
@@ -419,6 +498,9 @@ typedef struct{
 #define RESET          DISABLE
 #define GPIO_PIN_SET   SET
 #define GPIO_PIN_RESET RESET
+#define FLAG_RESET     RESET
+#define FLAG_SET     SET
+
 
 
 
