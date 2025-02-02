@@ -19,7 +19,6 @@ static void I2C_GenerateStopCondition(I2C_RegDef_t *pI2Cx);
 static uint8_t I2C_GetFlagStatus(I2C_RegDef_t *pI2Cx, uint32_t flagName);
 static void I2C_ExecteAddressPhase(I2C_RegDef_t *pI2Cx,uint8_t SlaveAddr,uint8_t writeOrRead);
 static void I2C_ClearADDRFlag(I2C_RegDef_t *pI2Cx);
-static void I2C_ManageACKing(I2C_RegDef_t *pI2Cx,uint8_t EnOrDi);
 
 /*
  * Not implemented: this function is to get the clock value of PLL clock
@@ -178,7 +177,7 @@ void I2C_GenerateStartCondition(I2C_RegDef_t *pI2Cx)
 	pI2Cx->I2C_CR1 |= (1 << I2C_CR1_START);
 }
 
-void I2C_MasterSendData(I2C_Handle_t *pI2CHandle,uint8_t * pTxBuff,uint32_t len,uint8_t slaveAddr)
+void I2C_MasterSendData(I2C_Handle_t *pI2CHandle,uint8_t * pTxBuff,uint32_t len,uint8_t slaveAddr,uint8_t Sr)
 {
 	/*
 	 * Step 1 : Generate the START condition
@@ -235,14 +234,17 @@ void I2C_MasterSendData(I2C_Handle_t *pI2CHandle,uint8_t * pTxBuff,uint32_t len,
 	 * Step 8: Generate STOP condition and master need not to wait for the completion of STOP condition.
 	 * Generating STOP automatically clears the BTF
 	 */
-	I2C_GenerateStopCondition(pI2CHandle->pI2Cx);
+	if(I2C_DISABLE_SR == Sr)
+	{
+		I2C_GenerateStopCondition(pI2CHandle->pI2Cx);
+	}
 }
 
 
 
 
 
-void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle,uint8_t * pRxBuff,uint32_t len,uint8_t slaveAddr)
+void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle,uint8_t * pRxBuff,uint32_t len,uint8_t slaveAddr,uint8_t Sr)
 {
 	/*
 	 * Step 1 : Generate the START condition
@@ -272,19 +274,20 @@ void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle,uint8_t * pRxBuff,uint32_t l
 		//Disable ACKing
 		I2C_ManageACKing(pI2CHandle->pI2Cx,I2C_ACK_DISABLE);
 
-		// generate stop condition
-		I2C_GenerateStopCondition(pI2CHandle->pI2Cx);
-
 		//Clear the ADDR flag
 		I2C_ClearADDRFlag(pI2CHandle->pI2Cx);
 
 		//wait until RXNE becomes 1
 		while(! I2C_GetFlagStatus(pI2CHandle->pI2Cx, I2C_RXNE_FLAG)); // Wait until RXNE is SET
 
+		if(I2C_DISABLE_SR == Sr)
+		{
+			// generate stop condition
+			I2C_GenerateStopCondition(pI2CHandle->pI2Cx);
+		}
+
 		//read data into buffer
 		*(pRxBuff) = pI2CHandle->pI2Cx->I2C_DR;
-
-		return;
 	}
 
 	if(len > 1)
@@ -302,8 +305,12 @@ void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle,uint8_t * pRxBuff,uint32_t l
 			{
 				//clear the ACK bit
 				I2C_ManageACKing(pI2CHandle->pI2Cx,I2C_ACK_DISABLE);
-				//generate STOP condition
-				I2C_GenerateStopCondition(pI2CHandle->pI2Cx);
+
+				if(I2C_DISABLE_SR == Sr)
+				{
+					// generate stop condition
+					I2C_GenerateStopCondition(pI2CHandle->pI2Cx);
+				}
 			}
 			//read the data from data register into the buffer
 			*(pRxBuff) = pI2CHandle->pI2Cx->I2C_DR;
@@ -315,6 +322,8 @@ void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle,uint8_t * pRxBuff,uint32_t l
 	// Re enable ACK ing
 	I2C_ManageACKing(pI2CHandle->pI2Cx,I2C_ACK_ENABLE);
 }
+
+
 uint8_t I2C_GetFlagStatus(I2C_RegDef_t *pI2Cx, uint32_t flagName)
 {
 	if(pI2Cx->I2C_SR1 & flagName)
@@ -352,7 +361,7 @@ void I2C_GenerateStopCondition(I2C_RegDef_t *pI2Cx)
 	pI2Cx->I2C_CR1 |= (1 << I2C_CR1_STOP);
 }
 
-static void I2C_ManageACKing(I2C_RegDef_t *pI2Cx,uint8_t EnOrDi)
+void I2C_ManageACKing(I2C_RegDef_t *pI2Cx,uint8_t EnOrDi)
 {
 	if(I2C_ACK_DISABLE == EnOrDi)
 	{

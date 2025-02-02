@@ -157,7 +157,10 @@ int main(void)
 	//Enable the I2C peripheral
 	I2C_PeripheralControl(I2C1, ENABLE);
 
-	I2C_MasterSendData(&I2C1Handle, i2cData, strlen((char *)i2cData), SLAVE_ADDR);
+	//ACK bit is made 1 after PE=1
+	I2C_ManageACKing(I2C1,I2C_ACK_ENABLE);
+
+	I2C_MasterSendData(&I2C1Handle, i2cData, strlen((char *)i2cData), SLAVE_ADDR,I2C_DISABLE_SR);
 
    while(1)
     {

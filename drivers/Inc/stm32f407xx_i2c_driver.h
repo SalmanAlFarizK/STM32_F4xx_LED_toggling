@@ -45,6 +45,14 @@
 
 
 /*
+ * Usage of REPEATED START operation macros
+ */
+#define I2C_DISABLE_SR  RESET
+#define I2C_ENABLE_SR   SET
+
+
+
+/*
  * Configuration structure for I2Cx peripheral
  */
 
@@ -81,8 +89,9 @@ void I2C_PeriClockControl(I2C_RegDef_t *pI2Cx, uint8_t EnorDi);
 /*
  * Data send & receive
  */
-void I2C_MasterSendData(I2C_Handle_t *pI2CHandle,uint8_t * pTxBuff,uint32_t len,uint8_t slaveAddr);
-void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle,uint8_t * pRxBuff,uint32_t len,uint8_t slaveAddr);
+void I2C_MasterSendData(I2C_Handle_t *pI2CHandle,uint8_t * pTxBuff,uint32_t len,uint8_t slaveAddr,uint8_t Sr);
+void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle,uint8_t * pRxBuff,uint32_t len,uint8_t slaveAddr,uint8_t Sr);
+void I2C_ManageACKing(I2C_RegDef_t *pI2Cx,uint8_t EnOrDi);
 
 
 // APIs Works in interrupt mode
